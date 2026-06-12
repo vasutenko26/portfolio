@@ -83,6 +83,12 @@ add_filter( 'pll_get_post_types', function ( $types, $is_settings ) {
 /* ---------------------------------------------------------------------------
  * Хардненинг
  * ------------------------------------------------------------------------- */
+// Секретный слуг входа берём из окружения (не из кода/БД) — obscurity вне git
+add_filter( 'pre_option_whl_page', function ( $v ) {
+	$slug = getenv( 'WP_LOGIN_SLUG' );
+	return $slug ? sanitize_title( $slug ) : $v;
+} );
+
 // XML-RPC полностью выключен
 add_filter( 'xmlrpc_enabled', '__return_false' );
 add_filter( 'wp_headers', function ( $headers ) {
