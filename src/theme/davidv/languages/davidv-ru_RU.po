@@ -1,0 +1,165 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: davidv 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "all disciplines"
+msgstr "все направления"
+
+msgid "Work"
+msgstr "Кейсы"
+
+msgid "case"
+msgstr "кейс"
+
+msgid "available for work"
+msgstr "готов к задаче"
+
+msgid "Need an engineer who keeps your infrastructure running?"
+msgstr "Нужен инженер, который держит инфраструктуру в работе?"
+
+msgid "Get in touch"
+msgstr "Написать"
+
+msgid "profiles"
+msgstr "профили"
+
+msgid "infrastructure engineer"
+msgstr "инженер инфраструктуры"
+
+msgid "I keep the|infrastructure|your business|*runs on*."
+msgstr "Держу в работе|инфраструктуру,|на которой|*крутится* бизнес."
+
+msgid "Telephony, Linux servers, DevOps and automation — I build it, bring it up and keep it from falling over. From the first call to a green dashboard."
+msgstr "Телефония, Linux-серверы, DevOps и автоматизация — собираю, поднимаю и не даю упасть. От первого звонка до зелёного дашборда."
+
+msgid "View work"
+msgstr "Смотреть кейсы"
+
+msgid "5 disciplines"
+msgstr "5 направлений"
+
+msgid "Service status"
+msgstr "Статус сервисов"
+
+msgid "Live monitoring panel: all five services active (running), uptime 99.98%."
+msgstr "Живая панель мониторинга: все пять сервисов active (running), аптайм 99.98%."
+
+msgid "Not «set it and forget it» — I *own the whole system*: design it, ship it in Docker, wrap it in monitoring and automate the routine, so it runs without you."
+msgstr "Не «настрою и забуду» — *владею системой целиком*: проектирую, разворачиваю в Docker, закрываю мониторингом и автоматизирую рутину, чтобы оно работало без вас."
+
+msgid "What I do"
+msgstr "Что я делаю"
+
+msgid "Case"
+msgstr "Кейс"
+
+msgid "Soon"
+msgstr "Скоро"
+
+msgid "selected"
+msgstr "избранное"
+
+msgid "Work coming soon."
+msgstr "Кейсы скоро появятся."
+
+msgid "Telephony"
+msgstr "Телефония"
+
+msgid "Asterisk · FreePBX"
+msgstr "Asterisk · FreePBX"
+
+msgid "Linux servers"
+msgstr "Linux-серверы"
+
+msgid "Administration · 24/7"
+msgstr "Администрирование · 24/7"
+
+msgid "DevOps"
+msgstr "DevOps"
+
+msgid "Docker · CI/CD · monitoring"
+msgstr "Docker · CI/CD · мониторинг"
+
+msgid "Automation"
+msgstr "Автоматизация"
+
+msgid "n8n · integrations"
+msgstr "n8n · интеграции"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "Sites · API · hosting"
+msgstr "Сайты · API · хостинг"
+
+msgid "Skip to content"
+msgstr "К содержимому"
+
+msgid "Home"
+msgstr "На главную"
+
+msgid "Primary navigation"
+msgstr "Основная навигация"
+
+msgid "Services"
+msgstr "Услуги"
+
+msgid "Contact"
+msgstr "Контакт"
+
+msgid "All systems operational"
+msgstr "Все системы в работе"
+
+msgid "Nothing found"
+msgstr "Ничего не найдено"
+
+msgid "This page is empty or does not exist."
+msgstr "Страница пуста или не существует."
+
+msgid "Back home"
+msgstr "На главную"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "all work"
+msgstr "все кейсы"
+
+msgid "Brief"
+msgstr "Задача"
+
+msgid "Brief coming soon."
+msgstr "Описание задачи скоро появится."
+
+msgid "What I did"
+msgstr "Что сделал"
+
+msgid "Details coming soon."
+msgstr "Описание скоро появится."
+
+msgid "Outcome"
+msgstr "Результат"
+
+msgid "Results coming soon."
+msgstr "Результаты скоро появятся."
+
+msgid "gallery"
+msgstr "галерея"
+
+msgid "demo screenshot"
+msgstr "скриншот демо"
+
+msgid "video"
+msgstr "видео"
+
+msgid "Repository"
+msgstr "Репозиторий"
+
+msgid "Discuss a project"
+msgstr "Обсудить задачу"

@@ -2,6 +2,10 @@
 @import '@fontsource-variable/space-grotesk';
 @import '@fontsource-variable/inter';
 @import '@fontsource-variable/jetbrains-mono';
+/* Кириллический display-фолбэк: у Space Grotesk нет кириллицы, поэтому
+   кириллические глифы заголовков per-glyph падают на Onest. На EN-страницах
+   (без кириллицы) Onest не скачивается — unicode-range. */
+@import '@fontsource-variable/onest';
 
 /* =========================================================================
    Tokens
@@ -21,7 +25,7 @@
 	--accent-glow: rgba(61, 214, 140, .14);
 	--danger:    #E0A33E;
 
-	--font-display: "Space Grotesk Variable", system-ui, sans-serif;
+	--font-display: "Space Grotesk Variable", "Onest Variable", system-ui, sans-serif;
 	--font-body:    "Inter Variable", system-ui, sans-serif;
 	--font-mono:    "JetBrains Mono Variable", ui-monospace, monospace;
 
@@ -167,6 +171,14 @@ button { font: inherit; }
 	70%  { box-shadow: 0 0 0 7px rgba(61,214,140,0); }
 	100% { box-shadow: 0 0 0 0 rgba(61,214,140,0); }
 }
+
+.header__right { display: flex; align-items: center; gap: .8rem; }
+
+/* Переключатель языков */
+.lang { display: inline-flex; align-items: center; gap: .1rem; font-family: var(--font-mono); font-size: .76rem; border: 1px solid var(--line); border-radius: 999px; padding: .2rem; }
+.lang__item { display: inline-block; padding: .22rem .5rem; border-radius: 999px; color: var(--muted); letter-spacing: .03em; transition: color .2s, background .2s; }
+.lang__item:hover { color: var(--text); }
+.lang__item.is-current { color: var(--accent); background: var(--surface); }
 
 .site-main { display: block; }
 

@@ -10,25 +10,28 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
-<a class="skip-link" href="#main">К содержимому</a>
+<a class="skip-link" href="#main"><?php esc_html_e( 'Skip to content', 'davidv' ); ?></a>
 
 <header class="site-header" data-header>
 	<div class="wrap site-header__inner">
-		<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="На главную">
+		<a class="brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Home', 'davidv' ); ?>">
 			<span class="brand__mark" aria-hidden="true">DV</span>
 			<span class="brand__text">david<span class="brand__dot">.</span>v</span>
 		</a>
 
-		<nav class="nav" aria-label="Основная навигация">
-			<a href="<?php echo esc_url( home_url( '/#services' ) ); ?>">Услуги</a>
-			<a href="<?php echo esc_url( home_url( '/#work' ) ); ?>">Кейсы</a>
-			<a href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">Контакт</a>
+		<nav class="nav" aria-label="<?php esc_attr_e( 'Primary navigation', 'davidv' ); ?>">
+			<a href="<?php echo esc_url( home_url( '/#services' ) ); ?>"><?php esc_html_e( 'Services', 'davidv' ); ?></a>
+			<a href="<?php echo esc_url( home_url( '/#work' ) ); ?>"><?php esc_html_e( 'Work', 'davidv' ); ?></a>
+			<a href="<?php echo esc_url( home_url( '/#contact' ) ); ?>"><?php esc_html_e( 'Contact', 'davidv' ); ?></a>
 		</nav>
 
-		<span class="status-pill" title="Все системы в работе">
-			<span class="status-pill__dot" aria-hidden="true"></span>
-			<span class="status-pill__txt">operational</span>
-		</span>
+		<div class="header__right">
+			<?php get_template_part( 'parts/lang-switcher' ); ?>
+			<span class="status-pill" title="<?php esc_attr_e( 'All systems operational', 'davidv' ); ?>">
+				<span class="status-pill__dot" aria-hidden="true"></span>
+				<span class="status-pill__txt">operational</span>
+			</span>
+		</div>
 	</div>
 </header>
 

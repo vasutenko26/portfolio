@@ -6,12 +6,12 @@ get_header(); ?>
 <section class="work" style="padding-top:9rem;">
 	<div class="wrap">
 		<header class="sec-head reveal" data-reveal>
-			<p class="kicker">// все направления</p>
-			<h1 class="sec-title">Кейсы</h1>
+			<p class="kicker">// <?php esc_html_e( 'all disciplines', 'davidv' ); ?></p>
+			<h1 class="sec-title"><?php esc_html_e( 'Work', 'davidv' ); ?></h1>
 		</header>
 		<ul class="work-grid">
 			<?php while ( have_posts() ) : the_post(); $pid = get_the_ID();
-				$role = davidv_field( 'role_label', $pid, 'кейс' );
+				$role = davidv_field( 'role_label', $pid, __( 'case', 'davidv' ) );
 				$metric = davidv_field( 'result_metric', $pid ); ?>
 				<li class="work-card reveal" data-reveal>
 					<a class="work-card__link" href="<?php the_permalink(); ?>">

@@ -19,9 +19,9 @@ get_header(); ?>
 			<?php endwhile; ?>
 		</ul>
 	<?php else : ?>
-		<h1 class="sec-title">Ничего не найдено</h1>
-		<p class="muted">Страница пуста или не существует.</p>
-		<p><a class="btn btn--ghost" href="<?php echo esc_url( home_url( '/' ) ); ?>">На главную</a></p>
+		<h1 class="sec-title"><?php esc_html_e( 'Nothing found', 'davidv' ); ?></h1>
+		<p class="muted"><?php esc_html_e( 'This page is empty or does not exist.', 'davidv' ); ?></p>
+		<p><a class="btn btn--ghost" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Back home', 'davidv' ); ?></a></p>
 	<?php endif; ?>
 </section>
 

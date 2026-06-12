@@ -5,16 +5,11 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 
-$services = davidv_services();
+$services        = davidv_services();
+$case_by_service = davidv_case_by_service();
 
-// карта slug услуги -> кейс (если кейс с таким slug существует)
-$case_by_service = array();
+// кейсы текущего языка (Polylang фильтрует WP_Query по языку автоматически)
 $cases_q = new WP_Query( array( 'post_type' => 'case', 'posts_per_page' => -1, 'orderby' => 'menu_order', 'order' => 'ASC' ) );
-if ( $cases_q->have_posts() ) {
-	foreach ( $cases_q->posts as $p ) {
-		$case_by_service[ $p->post_name ] = $p;
-	}
-}
 ?>
 
 <!-- ===================== HERO ===================== -->
@@ -22,26 +17,25 @@ if ( $cases_q->have_posts() ) {
 	<div class="wrap hero__grid">
 
 		<div class="hero__intro">
-			<p class="kicker reveal" data-reveal>// инженер инфраструктуры</p>
+			<p class="kicker reveal" data-reveal>// <?php esc_html_e( 'infrastructure engineer', 'davidv' ); ?></p>
 			<h1 class="hero__title">
-				<span class="line"><span data-word>Держу</span> <span data-word>в</span> <span data-word>работе</span></span>
-				<span class="line"><span data-word>инфраструктуру,</span></span>
-				<span class="line"><span data-word>на</span> <span data-word>которой</span> <span data-word class="accent">крутится</span></span>
-				<span class="line"><span data-word>ваш</span> <span data-word>бизнес.</span></span>
+				<?php
+				/* translators: строки разделяются «|», слово-акцент — в *звёздочках* */
+				echo davidv_split_headline( __( 'I keep the|infrastructure|your business|*runs on*.', 'davidv' ) );
+				?>
 			</h1>
 			<p class="hero__sub reveal" data-reveal>
-				Телефония, Linux-серверы, DevOps и автоматизация — собираю, поднимаю
-				и не даю упасть. От первого звонка до зелёного дашборда.
+				<?php esc_html_e( 'Telephony, Linux servers, DevOps and automation — I build it, bring it up and keep it from falling over. From the first call to a green dashboard.', 'davidv' ); ?>
 			</p>
 			<div class="btn-row reveal" data-reveal>
-				<a class="btn btn--primary" href="#work">Смотреть кейсы <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?></a>
-				<a class="btn btn--ghost" href="#services">5 направлений</a>
+				<a class="btn btn--primary" href="#work"><?php esc_html_e( 'View work', 'davidv' ); ?> <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?></a>
+				<a class="btn btn--ghost" href="#services"><?php esc_html_e( '5 disciplines', 'davidv' ); ?></a>
 			</div>
 		</div>
 
 		<!-- СИГНАТУРА: живая status/uptime панель -->
-		<aside class="monitor" data-monitor aria-label="Статус сервисов" role="img"
-		       aria-description="Анимированная панель мониторинга: все пять сервисов в состоянии active (running), аптайм 99.98%.">
+		<aside class="monitor" data-monitor aria-label="<?php esc_attr_e( 'Service status', 'davidv' ); ?>" role="img"
+		       aria-description="<?php esc_attr_e( 'Live monitoring panel: all five services active (running), uptime 99.98%.', 'davidv' ); ?>">
 			<div class="monitor__bar">
 				<span class="monitor__dots"><i></i><i></i><i></i></span>
 				<span class="monitor__name">monitor — david.v</span>
@@ -80,9 +74,10 @@ if ( $cases_q->have_posts() ) {
 <section class="strip">
 	<div class="wrap strip__inner reveal" data-reveal>
 		<p class="strip__text">
-			Не «настрою и забуду», а <span class="accent">владею системой целиком</span>:
-			проектирую, разворачиваю в Docker, закрываю мониторингом и автоматизирую рутину —
-			чтобы оно работало без вас.
+			<?php
+			/* translators: выделение — в *звёздочках* */
+			echo davidv_accent( __( 'Not «set it and forget it» — I *own the whole system*: design it, ship it in Docker, wrap it in monitoring and automate the routine, so it runs without you.', 'davidv' ) );
+			?>
 		</p>
 	</div>
 </section>
@@ -91,8 +86,8 @@ if ( $cases_q->have_posts() ) {
 <section class="services" id="services">
 	<div class="wrap">
 		<header class="sec-head reveal" data-reveal>
-			<p class="kicker">// 5 направлений</p>
-			<h2 class="sec-title">Что я делаю</h2>
+			<p class="kicker">// <?php esc_html_e( '5 disciplines', 'davidv' ); ?></p>
+			<h2 class="sec-title"><?php esc_html_e( 'What I do', 'davidv' ); ?></h2>
 		</header>
 
 		<ul class="svc-grid">
@@ -106,7 +101,7 @@ if ( $cases_q->have_posts() ) {
 					<span class="svc-card__ico"><?php echo davidv_icon( $s['glyph'] ); ?></span>
 					<h3 class="svc-card__title"><?php echo esc_html( $s['label'] ); ?></h3>
 					<p class="svc-card__tag"><?php echo esc_html( $s['tag'] ); ?></p>
-					<span class="svc-card__go"><?php echo $case ? 'Кейс' : 'Скоро'; ?> <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?></span>
+					<span class="svc-card__go"><?php echo $case ? esc_html__( 'Case', 'davidv' ) : esc_html__( 'Soon', 'davidv' ); ?> <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?></span>
 				</a>
 			</li>
 			<?php $i++; endforeach; ?>
@@ -118,16 +113,16 @@ if ( $cases_q->have_posts() ) {
 <section class="work" id="work">
 	<div class="wrap">
 		<header class="sec-head reveal" data-reveal>
-			<p class="kicker">// избранное</p>
-			<h2 class="sec-title">Кейсы</h2>
+			<p class="kicker">// <?php esc_html_e( 'selected', 'davidv' ); ?></p>
+			<h2 class="sec-title"><?php esc_html_e( 'Work', 'davidv' ); ?></h2>
 		</header>
 
 		<?php if ( $cases_q->have_posts() ) : ?>
 		<ul class="work-grid">
 			<?php foreach ( $cases_q->posts as $idx => $p ) :
-				$pid    = $p->ID;
-				$metric = davidv_field( 'result_metric', $pid );
-				$role   = davidv_field( 'role_label', $pid, 'кейс' );
+				$pid     = $p->ID;
+				$metric  = davidv_field( 'result_metric', $pid );
+				$role    = davidv_field( 'role_label', $pid, __( 'case', 'davidv' ) );
 				$summary = davidv_field( 'summary', $pid, get_the_excerpt( $pid ) );
 			?>
 			<li class="work-card reveal" data-reveal>
@@ -150,7 +145,7 @@ if ( $cases_q->have_posts() ) {
 			<?php endforeach; ?>
 		</ul>
 		<?php else : ?>
-			<p class="muted">Кейсы скоро появятся.</p>
+			<p class="muted"><?php esc_html_e( 'Work coming soon.', 'davidv' ); ?></p>
 		<?php endif; wp_reset_postdata(); ?>
 	</div>
 </section>

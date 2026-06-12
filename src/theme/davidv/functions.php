@@ -13,7 +13,11 @@ define( 'DAVIDV_URI', get_template_directory_uri() );
  * Theme setup
  * ------------------------------------------------------------------------- */
 add_action( 'after_setup_theme', function () {
+	load_theme_textdomain( 'davidv', DAVIDV_DIR . '/languages' );
+
 	add_theme_support( 'title-tag' );
+	add_theme_support( 'automatic-feed-links' );
+	// см. ниже — перезагрузка текстдомена под язык Polylang
 	add_theme_support( 'post-thumbnails' );
 	add_theme_support( 'html5', array( 'search-form', 'gallery', 'caption', 'style', 'script' ) );
 	add_theme_support( 'responsive-embeds' );
@@ -25,6 +29,22 @@ add_action( 'after_setup_theme', function () {
 	add_image_size( 'case_card', 900, 600, true );
 	add_image_size( 'case_wide', 1600, 900, true );
 } );
+
+/**
+ * Перезагрузка текстдомена темы под текущий язык Polylang.
+ * Текстдомен сначала грузится на after_setup_theme под дефолтной локалью (en_US),
+ * а язык Polylang определяется позже — поэтому перезагружаем под нужную локаль.
+ */
+add_action( 'template_redirect', function () {
+	$locale = determine_locale();
+	if ( $locale && 'en_US' !== $locale ) {
+		$mo = DAVIDV_DIR . "/languages/davidv-{$locale}.mo";
+		if ( file_exists( $mo ) ) {
+			unload_textdomain( 'davidv' );
+			load_textdomain( 'davidv', $mo, $locale );
+		}
+	}
+}, 0 );
 
 /* ---------------------------------------------------------------------------
  * Assets — читаем манифест Vite и подключаем хешированный бандл
@@ -86,15 +106,62 @@ function davidv_field( $name, $id = null, $default = '' ) {
 	return ( $v === '' || $v === null ) ? $default : $v;
 }
 
-/** 5 услуг проекта — единый источник правды (иконки = inline SVG в parts/icons). */
+/** 5 услуг проекта — единый источник правды. Строки переводимы (gettext). */
 function davidv_services() {
 	return array(
-		'telephony'  => array( 'label' => 'Телефония',     'tag' => 'Asterisk · FreePBX',        'glyph' => 'wave' ),
-		'linux'      => array( 'label' => 'Linux-серверы', 'tag' => 'Администрирование · 24/7',   'glyph' => 'server' ),
-		'devops'     => array( 'label' => 'DevOps',        'tag' => 'Docker · CI/CD · мониторинг', 'glyph' => 'pipeline' ),
-		'automation' => array( 'label' => 'Автоматизация', 'tag' => 'n8n · интеграции',           'glyph' => 'node' ),
-		'web'        => array( 'label' => 'Web',           'tag' => 'Сайты · API · хостинг',       'glyph' => 'globe' ),
+		'telephony'  => array( 'label' => __( 'Telephony', 'davidv' ),    'tag' => __( 'Asterisk · FreePBX', 'davidv' ),        'glyph' => 'wave' ),
+		'linux'      => array( 'label' => __( 'Linux servers', 'davidv' ), 'tag' => __( 'Administration · 24/7', 'davidv' ),     'glyph' => 'server' ),
+		'devops'     => array( 'label' => __( 'DevOps', 'davidv' ),       'tag' => __( 'Docker · CI/CD · monitoring', 'davidv' ), 'glyph' => 'pipeline' ),
+		'automation' => array( 'label' => __( 'Automation', 'davidv' ),   'tag' => __( 'n8n · integrations', 'davidv' ),         'glyph' => 'node' ),
+		'web'        => array( 'label' => __( 'Web', 'davidv' ),          'tag' => __( 'Sites · API · hosting', 'davidv' ),      'glyph' => 'globe' ),
 	);
+}
+
+/**
+ * Разбивает переводимый заголовок в разметку для анимации.
+ * Формат строки: строки разделяются «|», слово-акцент оборачивается в «*звёздочки*».
+ * Пример: "I keep the|infrastructure|*runs on*."
+ */
+function davidv_split_headline( $string ) {
+	$out = '';
+	foreach ( explode( '|', $string ) as $line ) {
+		$out .= '<span class="line">';
+		// делим строку на куски внутри *…* и вне, акцент может быть многословным
+		$parts = preg_split( '/(\*[^*]+\*)/u', trim( $line ), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+		foreach ( $parts as $part ) {
+			$accent = false;
+			if ( preg_match( '/^\*(.+)\*$/u', $part, $m ) ) { $part = $m[1]; $accent = true; }
+			foreach ( preg_split( '/\s+/u', trim( $part ) ) as $w ) {
+				if ( $w === '' ) continue;
+				$out .= '<span data-word' . ( $accent ? ' class="accent"' : '' ) . '>' . esc_html( $w ) . '</span> ';
+			}
+		}
+		$out .= '</span>';
+	}
+	return $out;
+}
+
+/** Превращает «*текст*» в акцентный span (для строк с одним выделением). */
+function davidv_accent( $string ) {
+	return preg_replace( '/\*(.+?)\*/u', '<span class="accent">$1</span>', esc_html( $string ) );
+}
+
+/** service_key кейса (язык-независимая связь карточки услуги и кейса). */
+function davidv_case_by_service() {
+	$map = array();
+	$q = new WP_Query( array(
+		'post_type'      => 'case',
+		'posts_per_page' => -1,
+		'orderby'        => 'menu_order',
+		'order'          => 'ASC',
+		'no_found_rows'  => true,
+	) );
+	foreach ( $q->posts as $p ) {
+		$key = get_post_meta( $p->ID, 'service_key', true ) ?: $p->post_name;
+		if ( ! isset( $map[ $key ] ) ) $map[ $key ] = $p;
+	}
+	wp_reset_postdata();
+	return $map;
 }
 
 /** Инлайн SVG-иконка по ключу (моno-stroke, наследует currentColor). */

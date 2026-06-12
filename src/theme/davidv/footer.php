@@ -4,11 +4,11 @@
 <footer class="site-footer" id="contact">
 	<div class="wrap site-footer__inner">
 		<div class="site-footer__lead">
-			<p class="kicker">// готов к задаче</p>
-			<h2 class="site-footer__title">Нужен инженер, который держит инфраструктуру в работе?</h2>
+			<p class="kicker">// <?php esc_html_e( 'available for work', 'davidv' ); ?></p>
+			<h2 class="site-footer__title"><?php esc_html_e( 'Need an engineer who keeps your infrastructure running?', 'davidv' ); ?></h2>
 			<div class="btn-row">
 				<a class="btn btn--primary" href="mailto:vasutenkod@gmail.com">
-					Написать <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?>
+					<?php esc_html_e( 'Get in touch', 'davidv' ); ?> <?php echo davidv_icon( 'arrow', 'ico ico--sm' ); ?>
 				</a>
 				<a class="btn btn--ghost" href="https://t.me/" rel="noopener" target="_blank">Telegram</a>
 			</div>
@@ -20,7 +20,7 @@
 				<span class="fmeta__v">Debian · Docker · Caddy · WordPress</span>
 			</div>
 			<div class="fmeta">
-				<span class="fmeta__k">профили</span>
+				<span class="fmeta__k"><?php esc_html_e( 'profiles', 'davidv' ); ?></span>
 				<span class="fmeta__v">
 					<a href="https://github.com/" rel="noopener" target="_blank">GitHub</a> ·
 					<a href="#" rel="noopener" target="_blank">Upwork</a>

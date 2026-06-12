@@ -64,6 +64,37 @@ EXTRA='--login-url https://n8n/signin --login-user me --login-pass *** \
 Скриншот сохраняется в `tools/screenshot/out/`, грузится в медиатеку и
 прикрепляется к нужному кейсу; в галерее кейса появляется автоматически.
 
+## Языки (i18n)
+
+Три языка через **Polylang**: English (дефолт, без префикса), Українська (`/uk/`), Русский (`/ru/`).
+
+- **UI темы** — gettext, источник английский. Строки в `languages/davidv.pot`,
+  переводы `davidv-uk.po/.mo`, `davidv-ru_RU.po/.mo`. Текстдомен грузится под
+  язык Polylang на `template_redirect` (см. `functions.php`).
+- **Кейсы** — каждый кейс это 3 связанных поста (EN/UK/RU), у каждого свои
+  ACF-поля и вложения. Связь карточки услуги с кейсом — по мете `service_key`
+  (не по slug), поэтому не зависит от языка.
+- **Slug кейсов** уникальны по языку: `devops`, `devops-uk`, `devops-ru`
+  (надёжная резолюция при EN без префикса). Переключатель ведёт по корректным
+  пермалинкам Polylang.
+- **Шрифты:** заголовки — Space Grotesk (латиница) + **Onest** (кириллица,
+  per-glyph fallback, грузится только на UK/RU). Body/mono — Inter / JetBrains
+  Mono с cyrillic-сабсетами.
+- **SEO:** `hreflang` на все версии (Polylang), `<html lang>` динамический.
+
+Скрипты настройки: `scripts/i18n-langs.php` (языки + URL), `scripts/i18n-content.php`
+(переводы кейсов), `scripts/i18n-slugfix.php` (slug). Перевод UI обновлять так:
+```bash
+# 1) пере-извлечь строки
+docker compose run --rm wpcli i18n make-pot wp-content/themes/davidv \
+  wp-content/themes/davidv/languages/davidv.pot --domain=davidv
+# 2) дописать переводы в davidv-uk.po / davidv-ru_RU.po, затем скомпилировать
+docker compose run --rm wpcli i18n make-mo wp-content/themes/davidv/languages \
+  wp-content/themes/davidv/languages
+```
+Скриншоты прикрепляются к конкретной языковой версии кейса по её slug
+(`capture.sh <url> devops-uk` — в украинский кейс).
+
 ## Безопасность
 
 - Вход в админку скрыт (`/***REDACTED***/`), `/wp-login.php` → 404
