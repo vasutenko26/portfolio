@@ -1,0 +1,7 @@
+[Unit]
+Description=Portfolio backup (MariaDB + n8n Postgres + WP uploads + configs)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/portfolio/scripts/backup.sh

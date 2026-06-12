@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily portfolio backup at 02:00 Europe/Kyiv
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 Europe/Kyiv
+Persistent=true
+
+[Install]
+WantedBy=timers.target

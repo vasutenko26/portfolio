@@ -1,0 +1,7 @@
+[Unit]
+Description=Portfolio backup restore verification (sandbox)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/portfolio/scripts/restore-test.sh

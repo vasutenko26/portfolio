@@ -20,3 +20,7 @@ tools/screenshot/out/
 caddy/n8n.caddy
 n8n/files/
 workflows/**/.gitkeep
+
+# транзитные выводы для терминал-карточек
+tools/screenshot/cards-data/
+/opt/backups/
