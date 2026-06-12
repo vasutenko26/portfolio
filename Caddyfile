@@ -22,5 +22,27 @@ davidvasutenko.fun {
 	}
 }
 
+# Тестовое приложение (health/metrics) — деплоится через CI/CD
+app.davidvasutenko.fun {
+	encode zstd gzip
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000;"
+		X-Content-Type-Options "nosniff"
+	}
+	reverse_proxy app:3000
+}
+
+# Grafana — публичный read-only дашборд (анонимный Viewer; админ под паролем)
+grafana.davidvasutenko.fun {
+	encode zstd gzip
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000;"
+		X-Content-Type-Options "nosniff"
+	}
+	reverse_proxy grafana:3000
+}
+
 # Поддомен n8n (вынесен в отдельный файл — basic-auth хэш не в git)
 import /etc/caddy/n8n.caddy

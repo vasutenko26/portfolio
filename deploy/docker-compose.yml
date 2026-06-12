@@ -1,0 +1,22 @@
+name: app
+
+# Рантайм тестового приложения. Изолирован от основного стека и его секретов.
+# Подключается к общей сети Caddy, чтобы прокси доставал контейнер по имени `app`.
+services:
+  app:
+    image: ghcr.io/vasutenko26/portfolio-app:latest
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+    networks: [shared]
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+
+networks:
+  shared:
+    external: true
+    name: portfolio_internal
