@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-screenshot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright-скриншоты демо-панелей → медиатека WordPress",
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -1,0 +1,23 @@
+{
+	# Глобальные настройки ACME — боевые сертификаты Let's Encrypt
+	email admin@davidvasutenko.fun
+}
+
+davidvasutenko.fun {
+	encode zstd gzip
+
+	# Заголовки безопасности
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy wordpress:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_up Host {host}
+	}
+}

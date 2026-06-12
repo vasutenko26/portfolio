@@ -1,0 +1,17 @@
+# Секреты
+.env
+
+# Caddy runtime (сертификаты, состояние)
+caddy/data/
+caddy/config/
+
+# Node
+node_modules/
+src/theme/davidv/assets/build/
+
+# Сборка/логи
+*.log
+.DS_Store
+
+# Артефакты скриншотов (попадают в медиатеку WP, не в git)
+tools/screenshot/out/

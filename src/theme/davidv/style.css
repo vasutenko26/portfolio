@@ -1,0 +1,12 @@
+/*
+Theme Name: David V — Infrastructure
+Theme URI: https://davidvasutenko.fun
+Author: David Vasutenko
+Description: Кастомная блочно-классическая тема портфолио инженера инфраструктуры. GSAP + Lenis, self-hosted шрифты, дисциплинированный дизайн.
+Version: 1.0.0
+Requires at least: 6.4
+Requires PHP: 8.1
+Text Domain: davidv
+*/
+
+/* Реальные стили собираются Vite в assets/build (main.css). Этот файл нужен WordPress как заголовок темы. */
