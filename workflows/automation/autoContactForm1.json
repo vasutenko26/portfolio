@@ -1,0 +1,55 @@
+{
+  "id": "autoContactForm1",
+  "name": "01 Contact form -> Telegram + CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contact",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "https://davidvasutenko.fun"
+        }
+      },
+      "id": "cf-webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "autoContactForm1"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst req = $input.first().json;\nconst body = req.body || {};\nconst headers = req.headers || {};\nconst fs = require('fs');\n\n// honeypot: скрытое поле company заполнено только ботами\nif (body.company && String(body.company).trim() !== '') {\n  return [{ json: { ok: true } }];\n}\n\n// rate limit: 3 заявки / 10 минут на IP\nconst ip = String(headers['x-forwarded-for'] || headers['x-real-ip'] || 'unknown').split(',')[0].trim();\nconst sd = $getWorkflowStaticData('global');\nsd.hits = sd.hits || {};\nconst now = Date.now(), win = 10 * 60 * 1000, max = 3;\nsd.hits[ip] = (sd.hits[ip] || []).filter(t => now - t < win);\nif (sd.hits[ip].length >= max) {\n  return [{ json: { ok: false, error: 'rate_limited' } }];\n}\n\n// валидация\nconst name = String(body.name || '').trim();\nconst email = String(body.email || '').trim();\nconst message = String(body.message || '').trim();\nconst lang = String(body.lang || 'en').trim().slice(0, 5);\nconst okEmail = /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email);\nif (!name || !okEmail || message.length < 2) {\n  return [{ json: { ok: false, error: 'invalid' } }];\n}\nsd.hits[ip].push(now);\n\n// 1) durable: пишем в CSV — заявка не теряется, даже если Telegram недоступен\nconst csv = '/files/leads.csv';\nconst esc = (s) => '\"' + String(s).replace(/\"/g, '\"\"').replace(/\\r?\\n/g, ' ') + '\"';\nif (!fs.existsSync(csv)) fs.writeFileSync(csv, 'timestamp,ip,lang,name,email,message\\n');\nfs.appendFileSync(csv, [new Date().toISOString(), ip, lang, name, email, message].map(esc).join(',') + '\\n');\n\n// 2) Telegram\nconst token = $env.TELEGRAM_BOT_TOKEN, chat = $env.TELEGRAM_CHAT_ID;\nconst text = `\\u{1F4E8} Новая заявка с сайта\\n\\n\\u{1F464} ${name}\\n✉️ ${email}\\n\\u{1F310} ${lang}\\n\\n${message}`;\ntry {\n  await this.helpers.httpRequest({ method: 'POST', url: `https://api.telegram.org/bot${token}/sendMessage`, body: { chat_id: chat, text }, json: true });\n} catch (e) {\n  // не падаем молча: заявка уже в CSV, поднимаем ошибку -> error workflow шлёт алерт\n  throw new Error('Telegram delivery failed: ' + e.message);\n}\nreturn [{ json: { ok: true } }];\n"
+      },
+      "id": "cf-code",
+      "name": "Handle submission",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Handle submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "errorWorkflow": "autoErrHandler01"
+  },
+  "active": false
+}

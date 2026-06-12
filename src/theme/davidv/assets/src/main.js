@@ -24,6 +24,41 @@ if (header) {
 	window.addEventListener('scroll', onScroll, { passive: true });
 }
 
+/* ---- Контактная форма → webhook n8n ---- */
+const cform = document.querySelector('[data-cform]');
+if (cform) {
+	const status = cform.querySelector('[data-cform-status]');
+	const btn = cform.querySelector('button[type="submit"]');
+	cform.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const data = Object.fromEntries(new FormData(cform).entries());
+		btn.disabled = true;
+		status.className = 'cform__status';
+		status.textContent = cform.dataset.sending || 'Sending…';
+		try {
+			const r = await fetch(cform.action, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(data),
+			});
+			const j = await r.json().catch(() => ({ ok: false }));
+			if (r.ok && j.ok) {
+				cform.reset();
+				status.textContent = cform.dataset.ok;
+				status.classList.add('is-ok');
+			} else {
+				status.textContent = cform.dataset.err;
+				status.classList.add('is-err');
+			}
+		} catch (_) {
+			status.textContent = cform.dataset.err;
+			status.classList.add('is-err');
+		} finally {
+			btn.disabled = false;
+		}
+	});
+}
+
 /* ---- Текст команды ---- */
 const typed = document.querySelector('[data-typed]');
 const typedText = typed ? (typed.dataset.text || typed.textContent.trim()) : '';

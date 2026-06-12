@@ -1,0 +1,55 @@
+{
+  "id": "autoAiIntake0001",
+  "name": "03 AI intake (Gemini) -> classify + escalate",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-intake",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "ai-webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "autoAiIntake0001"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst req = $input.first().json;\nconst body = req.body || {};\nconst token = $env.TELEGRAM_BOT_TOKEN, chat = $env.TELEGRAM_CHAT_ID;\nconst key = $env.GEMINI_API_KEY, model = $env.GEMINI_MODEL || 'gemini-2.5-flash';\nconst msg = String(body.message || body.text || '').trim();\nif (!msg) return [{ json: { ok: false, error: 'empty' } }];\n\nconst prompt = `Ты — ассистент поддержки инженера инфраструктуры. Классифицируй входящее сообщение и подготовь короткий черновик ответа на языке сообщения.\\nВерни СТРОГО JSON без markdown: {\"category\":\"sales|support|spam|other\",\"urgency\":\"low|medium|high\",\"escalate\":true|false,\"draft\":\"текст черновика\"}.\\nСообщение: <<<${msg}>>>`;\n\nlet ai;\ntry {\n  const res = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,\n    body: { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, responseMimeType: 'application/json' } },\n    json: true, timeout: 30000,\n  });\n  const txt = res.candidates[0].content.parts[0].text;\n  ai = JSON.parse(txt);\n} catch (e) {\n  // внешний сервис не ответил -> поднимаем ошибку, error workflow шлёт алерт\n  throw new Error('Gemini failed: ' + e.message);\n}\n\nconst escalate = !!(ai.escalate || ai.urgency === 'high');\nif (escalate) {\n  const text = `\\u{1F198} Эскалация (AI)\\n\\nКатегория: ${ai.category} | срочность: ${ai.urgency}\\n\\n✉️ ${msg}\\n\\n\\u{1F4DD} Черновик: ${ai.draft}`;\n  await this.helpers.httpRequest({ method: 'POST', url: `https://api.telegram.org/bot${token}/sendMessage`, body: { chat_id: chat, text }, json: true });\n}\nreturn [{ json: { ok: true, category: ai.category, urgency: ai.urgency, escalated: escalate, draft: ai.draft } }];\n"
+      },
+      "id": "ai-code",
+      "name": "Classify & route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Classify & route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "errorWorkflow": "autoErrHandler01"
+  },
+  "active": false
+}

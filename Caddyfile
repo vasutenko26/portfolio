@@ -21,3 +21,6 @@ davidvasutenko.fun {
 		header_up Host {host}
 	}
 }
+
+# Поддомен n8n (вынесен в отдельный файл — basic-auth хэш не в git)
+import /etc/caddy/n8n.caddy

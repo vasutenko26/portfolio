@@ -15,3 +15,8 @@ src/theme/davidv/assets/build/
 
 # Артефакты скриншотов (попадают в медиатеку WP, не в git)
 tools/screenshot/out/
+
+# n8n Caddy basic-auth (хэш)
+caddy/n8n.caddy
+n8n/files/
+workflows/**/.gitkeep

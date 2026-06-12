@@ -163,3 +163,27 @@ msgstr "Репозиторий"
 
 msgid "Discuss a project"
 msgstr "Обсудить задачу"
+
+msgid "Name"
+msgstr "Имя"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Sending…"
+msgstr "Отправка…"
+
+msgid "Thanks! I’ll get back to you shortly."
+msgstr "Спасибо! Скоро отвечу."
+
+msgid "Something went wrong — please email me directly."
+msgstr "Что-то пошло не так — напишите мне на почту."
+
+msgid "or write directly:"
+msgstr "или напишите напрямую:"

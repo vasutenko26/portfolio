@@ -1,0 +1,51 @@
+{
+  "id": "autoErrHandler01",
+  "name": "00 Error Handler — Telegram alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "11111111-0000-0000-0000-000000000001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst wf = (e.workflow && e.workflow.name) || 'unknown';\nconst node = (e.execution && e.execution.lastNodeExecuted) || '—';\nconst err = (e.execution && e.execution.error && e.execution.error.message) || (e.error && e.error.message) || 'unknown error';\nconst url = (e.execution && e.execution.url) || '';\nconst text = `\\uD83D\\uDEA8 n8n: workflow failed\\n\\nWorkflow: ${wf}\\nNode: ${node}\\nError: ${err}` + (url ? `\\n${url}` : '');\nreturn [{ json: { text } }];"
+      },
+      "id": "11111111-0000-0000-0000-000000000002",
+      "name": "Build alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "chat_id", "value": "={{$env.TELEGRAM_CHAT_ID}}" },
+            { "name": "text", "value": "={{$json.text}}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000003",
+      "name": "Telegram alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    }
+  ],
+  "connections": {
+    "Error Trigger": { "main": [[{ "node": "Build alert", "type": "main", "index": 0 }]] },
+    "Build alert": { "main": [[{ "node": "Telegram alert", "type": "main", "index": 0 }]] }
+  },
+  "settings": {},
+  "active": false
+}

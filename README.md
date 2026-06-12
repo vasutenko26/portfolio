@@ -95,6 +95,35 @@ docker compose run --rm wpcli i18n make-mo wp-content/themes/davidv/languages \
 Скриншоты прикрепляются к конкретной языковой версии кейса по её slug
 (`capture.sh <url> devops-uk` — в украинский кейс).
 
+## Автоматизация (n8n)
+
+Self-hosted **n8n + Postgres** в Docker за Caddy на поддомене
+`n8n.davidvasutenko.fun`. Наружу публично торчит **только** `/webhook/*`;
+редактор и `/rest/*` — за Caddy Basic Auth + собственным логином n8n.
+
+Сценарии (экспорт в `workflows/automation/`):
+- **00 Error Handler** — Error Trigger → алерт в Telegram (общий для всех).
+- **01 Contact form → Telegram + CSV** — форма сайта POST'ит на webhook;
+  honeypot + рейт-лимит по IP; заявка пишется в `/files/leads.csv` (durable),
+  затем уходит в Telegram. Сбой Telegram → алерт через error workflow.
+- **02 Daily health report** — cron 09:00 Киев: пинг сайта + латентность +
+  число заявок за 24ч → сводка в Telegram.
+- **03 AI intake (Gemini)** — webhook: модель классифицирует сообщение,
+  готовит черновик ответа и эскалирует срочное в Telegram.
+
+Секреты (Telegram-токен, Gemini-ключ) — в env-переменных n8n, **не в JSON**,
+поэтому экспортированные воркфлоу безопасно лежат в git.
+
+Контактная форма на сайте — нативная (тема `davidv`), 3 языка, доступная,
+honeypot, `fetch` POST на webhook. CORS на webhook ограничен origin'ом сайта.
+
+Импорт воркфлоу после клона:
+```bash
+docker compose exec n8n n8n import:workflow --input=/files/<wf>.json
+docker compose exec n8n n8n update:workflow --id=<id> --active=true
+docker compose restart n8n   # регистрация триггеров
+```
+
 ## Безопасность
 
 - Вход в админку скрыт (`/***REDACTED***/`), `/wp-login.php` → 404
