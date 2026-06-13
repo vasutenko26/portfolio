@@ -58,7 +58,7 @@ $cur_lang = function_exists( 'pll_current_language' ) ? pll_current_language() :
 			<div class="fmeta">
 				<span class="fmeta__k"><?php esc_html_e( 'profiles', 'davidv' ); ?></span>
 				<span class="fmeta__v">
-					<a href="https://github.com/" rel="noopener" target="_blank">GitHub</a> ·
+					<a href="https://github.com/vasutenko26" rel="noopener" target="_blank">GitHub</a> ·
 					<a href="#" rel="noopener" target="_blank">Upwork</a>
 				</span>
 			</div>
