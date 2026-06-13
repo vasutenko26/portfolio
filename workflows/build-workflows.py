@@ -76,7 +76,7 @@ contact = wf("autoContactForm1", "01 Contact form -> Telegram + CSV", [
 health_js = r"""
 const fs = require('fs');
 const url = $env.SITE_HEALTH_URL || 'https://davidvasutenko.fun/';
-const token = $env.TELEGRAM_BOT_TOKEN, chat = $env.TELEGRAM_CHAT_ID;
+const token = $env.SERVER_BOT_TOKEN, chat = $env.SERVER_CHAT_ID;
 
 let status = 'DOWN', code = 0, ms = 0;
 const t0 = Date.now();

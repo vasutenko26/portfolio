@@ -17,7 +17,7 @@ echo "   folderUID=$FUID"
 
 echo "2) Telegram contact point"
 curl -s "${R[@]}" "${AUTH[@]}" "${H[@]}" -X POST "$GRAF/api/v1/provisioning/contact-points" \
-  -d "{\"name\":\"telegram\",\"type\":\"telegram\",\"settings\":{\"bottoken\":\"${TELEGRAM_BOT_TOKEN}\",\"chatid\":\"${TELEGRAM_CHAT_ID}\"},\"disableResolveMessage\":false}" \
+  -d "{\"name\":\"telegram\",\"type\":\"telegram\",\"settings\":{\"bottoken\":\"${SERVER_BOT_TOKEN}\",\"chatid\":\"${SERVER_CHAT_ID}\"},\"disableResolveMessage\":false}" \
   -o /dev/null -w "   http %{http_code}\n"
 
 echo "3) Notification policy (root → telegram)"

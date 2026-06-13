@@ -134,12 +134,44 @@ services:
       # секреты для воркфлоу (через $$env, в экспортируемый JSON не попадают)
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      SERVER_BOT_TOKEN: ${SERVER_BOT_TOKEN}
+      SERVER_CHAT_ID: ${SERVER_CHAT_ID}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       SITE_HEALTH_URL: ${SITE_HEALTH_URL}
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/files:/files
     mem_limit: 1024m
+    networks: [internal]
+
+  # ---------- личный бот-ассистент задач ----------
+  assistant-bot:
+    build: ./assistant
+    restart: unless-stopped
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      ASSISTANT_TZ: Europe/Kyiv
+      ASSISTANT_DB: /data/assistant.db
+      FRIEND_CHAT_ID: ${FRIEND_CHAT_ID:-1178778072}
+    volumes:
+      - assistant_data:/data
+    mem_limit: 256m
+    networks: [internal]
+
+  # ---------- автобэкапы (3×/день → бот «Фриланс сервер») ----------
+  backup:
+    build: ./backup
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Kyiv
+      COMPOSE_PROJECT: portfolio
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portfolio:/opt/portfolio
+    mem_limit: 256m
     networks: [internal]
 
   # ---------- мониторинг ----------
@@ -199,6 +231,7 @@ volumes:
   n8n_data:
   prometheus_data:
   grafana_data:
+  assistant_data:
 
 networks:
   internal:
