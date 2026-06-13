@@ -1,0 +1,66 @@
+# Telephony / VoIP demo stand — FreePBX 17 + Asterisk 21 (escomputers/freepbx).
+# SECURITY: SIP (5060) and RTP are NEVER published to the host. Only the web admin
+# is exposed, and ONLY on the loopback interface (127.0.0.1:8088). Nothing of this
+# stack is reachable from the public internet. No host firewall rules are touched.
+# This is a throwaway stand: brought up for screenshots/proof, then torn down.
+
+volumes:
+  mysql_data:
+  var_data:
+  etc_data:
+
+networks:
+  defaultnet:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: freepbxint
+    ipam:
+      driver: default
+      config:
+        # 172.18/16 is taken by portfolio_internal -> use 172.30/16 here
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
+
+secrets:
+  mysql_root_password:
+    file: mysql_root_password.txt
+  freepbxuser_password:
+    file: freepbxuser_password.txt
+  postfix_sasl_passwd:
+    file: sasl_passwd.txt
+
+services:
+  db:
+    restart: unless-stopped
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_USER: freepbxuser
+      MYSQL_PASSWORD_FILE: /run/secrets/freepbxuser_password
+    secrets:
+      - mysql_root_password
+      - freepbxuser_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      defaultnet:
+        ipv4_address: 172.30.0.10
+
+  freepbx:
+    restart: unless-stopped
+    image: escomputers/freepbx:17-nofail2ban
+    networks:
+      defaultnet:
+        ipv4_address: 172.30.0.20
+    ports:
+      # Web admin ONLY on loopback — not 0.0.0.0. SIP/RTP intentionally NOT mapped.
+      - "127.0.0.1:8088:80/tcp"
+    secrets:
+      - postfix_sasl_passwd
+    volumes:
+      - var_data:/var
+      - etc_data:/etc
+    depends_on:
+      - db

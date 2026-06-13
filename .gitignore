@@ -24,3 +24,6 @@ workflows/**/.gitkeep
 # транзитные выводы для терминал-карточек
 tools/screenshot/cards-data/
 /opt/backups/
+
+# Телефония: секреты стенда (пароли БД/postfix) и runtime — НЕ в git
+telephony/*.txt
