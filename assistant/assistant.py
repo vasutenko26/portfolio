@@ -1149,9 +1149,27 @@ async def on_media(update, context):
     uid = update.effective_user.id
     st = context.user_data.get("await")
     if not st or st[0] != "attach":
-        return await update.message.reply_text(
-            "Чтобы прикрепить файл к задаче: открой её → 💬 Обсуждение → 📎 Вложить.",
-            reply_markup=MAIN_KB)
+        # вне режима вложения: сохраняем присланный скрин на диск (для портфолио и т.п.)
+        try:
+            import os as _os
+            _os.makedirs("/data/captures", exist_ok=True)
+            if update.message.photo:
+                fid, ext = update.message.photo[-1].file_id, "jpg"
+            else:
+                doc = update.message.document
+                fid = doc.file_id
+                ext = (doc.file_name.rsplit(".", 1)[-1] if doc.file_name and "." in doc.file_name else "bin")
+            n = len([x for x in _os.listdir("/data/captures")]) + 1
+            path = f"/data/captures/cap-{n:02d}-{update.message.message_id}.{ext}"
+            f = await context.bot.get_file(fid)
+            await f.download_to_drive(path)
+            return await update.message.reply_text(f"📥 Сохранил скрин #{n} (для портфолио).",
+                                                   reply_markup=MAIN_KB)
+        except Exception as e:                               # noqa: BLE001
+            log.warning("capture failed: %s", e)
+            return await update.message.reply_text(
+                "Не смог сохранить файл. Для вложения к задаче: открой её → 💬 Обсуждение → 📎 Вложить.",
+                reply_markup=MAIN_KB)
     tid = st[1]; context.user_data.pop("await", None)
     if update.message.photo:
         file_id, ftype = update.message.photo[-1].file_id, "photo"
