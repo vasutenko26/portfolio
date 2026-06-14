@@ -174,6 +174,25 @@ services:
     mem_limit: 256m
     networks: [internal]
 
+  # ---------- бот «Фриланс сервер»: отчёты по требованию (кнопки) ----------
+  # privileged + pid:host → nsenter в namespace хоста для серверного отчёта от root
+  server-bot:
+    build: ./serverbot
+    restart: unless-stopped
+    privileged: true
+    pid: "host"
+    environment:
+      SERVER_BOT_TOKEN: ${SERVER_BOT_TOKEN}
+      SERVER_CHAT_ID: ${SERVER_CHAT_ID}
+      SITE_HEALTH_URL: ${SITE_HEALTH_URL:-https://davidvasutenko.fun/}
+      SITE_NAME: ${SITE_NAME:-davidvasutenko.fun}
+      LEADS_CSV: /files/leads.csv
+      REPORT_SH: /opt/portfolio/serverbot/server-report-print.sh
+    volumes:
+      - ./n8n/files:/files:ro
+    mem_limit: 128m
+    networks: [internal]
+
   # ---------- мониторинг ----------
   node-exporter:
     image: prom/node-exporter:latest
