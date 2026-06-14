@@ -52,6 +52,21 @@ grafana.davidvasutenko.fun {
 	reverse_proxy obs-grafana:3000
 }
 
+# RAG-ассистент «чат с документами», проект /rag-assistant (контейнер rag-app
+# в сети portfolio_internal). Загрузка файлов до ~25 МБ.
+rag.davidvasutenko.fun {
+	encode zstd gzip
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000;"
+		X-Content-Type-Options "nosniff"
+	}
+	request_body {
+		max_size 30MB
+	}
+	reverse_proxy rag-app:8000
+}
+
 # Status page (Uptime Kuma) — публичная статус-страница, проект /status-page.
 # Контейнер uptime-kuma висит в сети portfolio_internal (отдельный compose).
 status.davidvasutenko.fun {

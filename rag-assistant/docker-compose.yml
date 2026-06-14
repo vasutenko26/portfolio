@@ -1,0 +1,72 @@
+name: rag-assistant
+
+# Self-hosted RAG «чат с документами». Эмбеддинги локальные (sentence-transformers),
+# вектор-БД Qdrant, ответ LLM со ссылками на источник. Данные не покидают сервер
+# (с провайдером ollama — вообще без внешних вызовов). Наружу только app через Caddy.
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.11.3
+    restart: unless-stopped
+    # Порты на хост НЕ публикуются — только внутренняя сеть rag.
+    volumes:
+      - qdrant_data:/qdrant/storage
+    mem_limit: 512m
+    networks: [rag]
+
+  embedder:
+    build: ./embedder
+    restart: unless-stopped
+    environment:
+      EMBED_MODEL: ${EMBED_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    mem_limit: 1500m
+    networks: [rag]
+
+  app:
+    build: ./app
+    restart: unless-stopped
+    depends_on:
+      embedder:
+        condition: service_healthy
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      EMBEDDER_URL: http://embedder:8000
+      COLLECTION: ${COLLECTION:-documents}
+      CHUNK_SIZE: ${CHUNK_SIZE:-900}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-150}
+      TOP_K: ${TOP_K:-5}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+      # --- LLM генерации (на выбор клиента) ---
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    mem_limit: 512m
+    networks:
+      rag:
+      shared:
+        aliases: [rag-app]
+
+volumes:
+  qdrant_data:
+
+networks:
+  rag:
+  shared:
+    external: true
+    name: portfolio_internal
