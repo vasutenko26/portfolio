@@ -3,6 +3,12 @@
 	email admin@davidvasutenko.fun
 }
 
+# www → канонический apex (301). Cert выдастся автоматически, как только
+# в DNS появится запись www (A или CNAME на davidvasutenko.fun).
+www.davidvasutenko.fun {
+	redir https://davidvasutenko.fun{uri} permanent
+}
+
 davidvasutenko.fun {
 	encode zstd gzip
 
