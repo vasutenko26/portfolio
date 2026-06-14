@@ -41,7 +41,7 @@ app.davidvasutenko.fun {
 	reverse_proxy app:3000
 }
 
-# Grafana — публичный read-only дашборд (анонимный Viewer; админ под паролем)
+# Grafana — observability-кейс (/observability). Логин обязателен (анонимный доступ off).
 grafana.davidvasutenko.fun {
 	encode zstd gzip
 	header {
@@ -49,7 +49,7 @@ grafana.davidvasutenko.fun {
 		Strict-Transport-Security "max-age=31536000;"
 		X-Content-Type-Options "nosniff"
 	}
-	reverse_proxy grafana:3000
+	reverse_proxy obs-grafana:3000
 }
 
 # Status page (Uptime Kuma) — публичная статус-страница, проект /status-page.

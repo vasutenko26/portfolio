@@ -1,0 +1,82 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: portfolio
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: alertmanager
+    static_configs:
+      - targets: ['alertmanager:9093']
+
+  # Метрики хоста (CPU, RAM, диск, сеть).
+  - job_name: node
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Метрики всех контейнеров хоста (Docker API экспортёр; на overlay2-хостах можно cadvisor:8080).
+  - job_name: docker
+    static_configs:
+      - targets: ['docker-metrics:9101']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['obs-grafana:3000']
+
+  # Тестовое приложение (через общую сеть portfolio_internal).
+  - job_name: app
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['app:3000']
+
+  # n8n: метрики появятся при N8N_METRICS=true в главном compose (по умолчанию off).
+  # - job_name: n8n
+  #   static_configs:
+  #     - targets: ['n8n:5678']
+
+  # Внешние эндпоинты: HTTP 2xx + срок TLS-сертификата (через blackbox).
+  - job_name: blackbox-http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://davidvasutenko.fun
+          - https://grafana.davidvasutenko.fun
+          - https://status.davidvasutenko.fun
+          - https://app.davidvasutenko.fun/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # n8n под Basic Auth → отвечает 401, считаем «живым».
+  - job_name: blackbox-http-auth
+    metrics_path: /probe
+    params:
+      module: [http_2xx_401]
+    static_configs:
+      - targets:
+          - https://n8n.davidvasutenko.fun
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

@@ -1,0 +1,27 @@
+# Шаблон: __BOT_TOKEN__ / __CHAT_ID__ подставляются из env на старте контейнера,
+# чтобы секреты бота «Фриланс сервер» не попадали в git.
+route:
+  receiver: telegram
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 4h
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      - bot_token: '__BOT_TOKEN__'
+        chat_id: __CHAT_ID__
+        parse_mode: HTML
+        send_resolved: true
+        message: |
+          {{ range .Alerts }}{{ if eq .Status "firing" }}🔴{{ else }}✅{{ end }} <b>{{ .Labels.alertname }}</b> [{{ .Labels.severity }}]
+          {{ .Annotations.summary }}
+          {{ .Annotations.description }}
+          {{ end }}
+
+inhibit_rules:
+  # Критичные алерты глушат warning по тому же alertname/instance.
+  - source_matchers: [severity = "critical"]
+    target_matchers: [severity = "warning"]
+    equal: ['alertname', 'instance']

@@ -1,0 +1,153 @@
+name: observability
+
+# Самостоятельный observability-стек. Конфиги — как код в этом репо, никакой
+# ручной настройки через UI. Внутренняя сеть `obs` для скрейпа; Grafana и Prometheus
+# дополнительно в общей сети portfolio_internal (под алиасом obs-*), чтобы Caddy достал
+# Grafana, а Prometheus — внутренние сервисы стека (app, n8n).
+#
+# Поднять:  docker compose up -d   → Grafana с готовыми дашбордами, настраивать руками нечего.
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 512m
+    networks: [obs, shared]
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    # Секреты бота «Фриланс сервер» рендерятся из env в конфиг на старте (не в git).
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        sed "s|__BOT_TOKEN__|$${SERVER_BOT_TOKEN}|; s|__CHAT_ID__|$${SERVER_CHAT_ID}|"
+        /etc/alertmanager/alertmanager.tmpl.yml > /tmp/alertmanager.yml &&
+        exec /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager
+    environment:
+      SERVER_BOT_TOKEN: ${SERVER_BOT_TOKEN:?set in .env}
+      SERVER_CHAT_ID: ${SERVER_CHAT_ID:?set in .env}
+    volumes:
+      - ./alertmanager/alertmanager.tmpl.yml:/etc/alertmanager/alertmanager.tmpl.yml:ro
+      - alertmanager_data:/alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+    networks: [obs]
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+    networks: [obs]
+
+  # Метрики контейнеров (CPU/RAM/сеть + up) с понятными ИМЕНАМИ контейнеров.
+  #
+  # Почему не cAdvisor: этот хост работает на storage-driver "overlayfs" (containerd
+  # image store / snapshotter, Docker 26+). cAdvisor не умеет определять RW-layer для
+  # такого драйвера и вообще не регистрирует docker-контейнеры — ни имён, ни метрик
+  # (ошибка "failed to identify the read-write layer ID"). Поэтому источник метрик
+  # контейнеров здесь — маленький экспортёр поверх Docker API (см. ./docker-metrics).
+  # На хостах с overlay2 можно вернуть штатный cAdvisor — пример в README.
+  docker-metrics:
+    build: ./docker-metrics
+    restart: unless-stopped
+    user: "10001:10001"
+    group_add:
+      - "${DOCKER_GID:-994}"   # группа docker → read-only доступ к сокету
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - "9101"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:9101/metrics').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+    networks: [obs]
+
+  # Чёрный ящик: HTTP + проверка срока TLS публичных эндпоинтов (egress через NAT).
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    restart: unless-stopped
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9115/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 64m
+    networks: [obs]
+
+  # Grafana с provisioning'ом: datasource и дашборды заданы файлами. Логин обязателен
+  # (анонимный доступ выключен). Наружу — только через Caddy на grafana-поддомене.
+  obs-grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on: [prometheus]
+    environment:
+      GF_SERVER_ROOT_URL: https://grafana.davidvasutenko.fun
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set in .env}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_VIEWERS_CAN_EDIT: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    mem_limit: 256m
+    networks:
+      obs:
+      shared:
+        aliases: [obs-grafana]
+
+volumes:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+
+networks:
+  obs:
+  shared:
+    external: true
+    name: portfolio_internal
