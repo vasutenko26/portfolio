@@ -55,9 +55,10 @@ body{font-family:'SG',sans-serif;-webkit-font-smoothing:antialiased;overflow:hid
   font-size:20px;font-weight:500;color:${A};border:1.5px solid ${A_DIM};border-radius:999px;padding:12px 22px;
   background:linear-gradient(180deg,rgba(61,214,140,.12),rgba(61,214,140,.04))}
 .tag .dot{width:11px;height:11px;border-radius:50%;background:${A};box-shadow:0 0 12px ${A}}
-.right{position:relative;flex:1;overflow:hidden}
-.frame{position:absolute;top:50%;left:46%;transform:translate(-46%,-50%) rotate(-2deg);width:660px;height:430px;
-  border-radius:16px;overflow:hidden;border:1px solid #2C3542;box-shadow:0 40px 90px -28px #000, 0 0 0 1px rgba(61,214,140,.10);background:#0B0E12}
+.right{position:relative;flex:1;overflow:hidden;perspective:1800px;perspective-origin:50% 50%}
+.frame{position:absolute;top:50%;left:56%;transform:translate(-50%,-50%) rotateX(3deg) rotateY(-24deg) rotateZ(-2deg);
+  width:800px;height:520px;border-radius:16px;overflow:hidden;border:1px solid #2C3542;
+  box-shadow:0 50px 100px -30px #000, 0 0 0 1px rgba(61,214,140,.10);background:#0B0E12}
 .frame img{width:100%;height:100%;object-fit:${g.fit};object-position:${g.pos};display:block}
 .frame::after{content:'';position:absolute;inset:0;border-radius:16px;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), inset 0 -60px 80px -40px rgba(0,0,0,.6)}
