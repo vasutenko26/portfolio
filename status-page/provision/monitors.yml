@@ -39,13 +39,10 @@ monitors:
     url: https://status.davidvasutenko.fun
     accepted_statuscodes: ["200-299"]
 
-  # RAG-ассистент — поддомен появится с проектом #3. До деплоя не публикуем,
-  # чтобы страница не краснела. Включить: убрать requires_env и задать url.
+  # RAG-ассистент (проект #3) — задеплоен и публичен.
   - name: RAG assistant
     url: https://rag.davidvasutenko.fun
     accepted_statuscodes: ["200-299"]
-    published: false
-    requires_env: RAG_ENABLED
 
   # Монитор учений: бьёт по disposable-мишени drill-target. Скрыт с публичной
   # страницы. Создаётся только при DRILL=true. См. раздел Drill в README.
