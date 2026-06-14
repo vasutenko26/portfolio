@@ -52,5 +52,22 @@ grafana.davidvasutenko.fun {
 	reverse_proxy grafana:3000
 }
 
+# Status page (Uptime Kuma) — публичная статус-страница, проект /status-page.
+# Контейнер uptime-kuma висит в сети portfolio_internal (отдельный compose).
+status.davidvasutenko.fun {
+	encode zstd gzip
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000;"
+		X-Content-Type-Options "nosniff"
+	}
+
+	# Корень → публичная статус-страница (UI логина остаётся на /dashboard).
+	@root path /
+	redir @root /status/status 302
+
+	reverse_proxy uptime-kuma:3001
+}
+
 # Поддомен n8n (вынесен в отдельный файл — basic-auth хэш не в git)
 import /etc/caddy/n8n.caddy

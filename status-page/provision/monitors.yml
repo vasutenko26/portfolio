@@ -1,0 +1,60 @@
+# Декларативный список мониторов и публичной статус-страницы.
+# provision.py применяет это идемпотентно: создаёт недостающее, обновляет существующее.
+#
+# Поля монитора:
+#   name                 — отображаемое имя (ключ идемпотентности)
+#   url                  — публичный HTTPS-URL (end-to-end: DNS + Caddy + TLS + сервис)
+#   accepted_statuscodes — какие коды считать «up» (по умолчанию ["200-299"])
+#   published            — показывать ли на публичной статус-странице (по умолчанию true)
+#   requires_env         — создавать монитор только если эта env-переменная truthy
+#
+# Все мониторы — тип HTTP с проверкой срока TLS-сертификата (expiryNotification: on,
+# ignoreTls: off). Интервал 60с, 3 ретрая по 60с.
+
+status_page:
+  slug: status
+  title: davidvasutenko.fun — Service Status
+  description: Live uptime of self-hosted services. Incidents and 24h/7d/30d history below.
+  group: Services
+
+monitors:
+  - name: Portfolio site
+    url: https://davidvasutenko.fun
+    accepted_statuscodes: ["200-299"]
+
+  - name: n8n (automation)
+    url: https://n8n.davidvasutenko.fun
+    # UI под Basic Auth → живой сервис отвечает 401; считаем это «up».
+    accepted_statuscodes: ["200-299", "401"]
+
+  - name: Grafana (observability)
+    url: https://grafana.davidvasutenko.fun
+    accepted_statuscodes: ["200-299"]
+
+  - name: App (CI/CD demo)
+    url: https://app.davidvasutenko.fun/health
+    accepted_statuscodes: ["200-299"]
+
+  - name: Status page
+    url: https://status.davidvasutenko.fun
+    accepted_statuscodes: ["200-299"]
+
+  # RAG-ассистент — поддомен появится с проектом #3. До деплоя не публикуем,
+  # чтобы страница не краснела. Включить: убрать requires_env и задать url.
+  - name: RAG assistant
+    url: https://rag.davidvasutenko.fun
+    accepted_statuscodes: ["200-299"]
+    published: false
+    requires_env: RAG_ENABLED
+
+  # Монитор учений: бьёт по disposable-мишени drill-target. Скрыт с публичной
+  # страницы. Создаётся только при DRILL=true. См. раздел Drill в README.
+  - name: Alert Drill (internal)
+    url: http://drill-target/
+    accepted_statuscodes: ["200-299"]
+    published: false
+    requires_env: DRILL
+    # Тугой тайминг — чтобы учения давали DOWN/UP за ~40с, а не ~3 мин.
+    interval: 20
+    retryInterval: 20
+    maxretries: 1

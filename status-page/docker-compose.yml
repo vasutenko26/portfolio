@@ -1,0 +1,76 @@
+name: status-page
+
+# Публичная статус-страница (Uptime Kuma). Отдельный проект, изолированный от
+# секретов основного стека. Подключается к общей сети `portfolio_internal`,
+# чтобы reverse-proxy Caddy доставал контейнер по имени `uptime-kuma`.
+#
+# Поднять:        docker compose up -d
+# Провижн:        docker compose --profile provision run --rm provision
+# Drill-мишень:   docker compose --profile drill up -d drill-target
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:${KUMA_VERSION:-1.23.16}
+    restart: unless-stopped
+    # Порт НЕ публикуется на хост — наружу только через Caddy (TLS на поддомене).
+    # Внутри сети слушает 3001.
+    expose:
+      - "3001"
+    volumes:
+      - kuma_data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # Канонический healthcheck Uptime Kuma (бинарь в образе).
+      test: ["CMD", "extra/healthcheck"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    mem_limit: 256m
+    networks:
+      shared:
+        aliases: [uptime-kuma]
+
+  # Идемпотентный провижн: создаёт нотификацию Telegram, мониторы и публичную
+  # статус-страницу через socket.io API Kuma. Запускается по требованию и выходит.
+  provision:
+    build: ./provision
+    profiles: ["provision"]
+    depends_on:
+      uptime-kuma:
+        condition: service_healthy
+    environment:
+      KUMA_URL: http://uptime-kuma:3001
+      KUMA_ADMIN_USER: ${KUMA_ADMIN_USER:?set in .env}
+      KUMA_ADMIN_PASSWORD: ${KUMA_ADMIN_PASSWORD:?set in .env}
+      STATUS_DOMAIN: ${STATUS_DOMAIN:-status.davidvasutenko.fun}
+      # Техничка → бот «Фриланс сервер» (тот же, что бэкапы/серверные отчёты).
+      SERVER_BOT_TOKEN: ${SERVER_BOT_TOKEN:?set in .env}
+      SERVER_CHAT_ID: ${SERVER_CHAT_ID:?set in .env}
+      # DRILL=true дополнительно создаёт скрытый монитор учений (см. README).
+      DRILL: ${DRILL:-false}
+    networks:
+      shared:
+        aliases: [provision]
+
+  # Disposable-мишень для учений по алертам (drill). Нормально НЕ запущена.
+  # Поднять → монитор UP, остановить → реальный DOWN-алерт в Telegram + инцидент.
+  drill-target:
+    image: traefik/whoami:latest
+    profiles: ["drill"]
+    restart: "no"
+    expose:
+      - "80"
+    mem_limit: 32m
+    networks:
+      shared:
+        aliases: [drill-target]
+
+volumes:
+  kuma_data:
+
+networks:
+  shared:
+    external: true
+    name: portfolio_internal
