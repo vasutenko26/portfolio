@@ -27,7 +27,7 @@
       "id": 3, "type": "gauge", "title": "Root disk used",
       "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [ { "refId": "A", "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/rootfs\",fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{mountpoint=\"/rootfs\",fstype!~\"tmpfs|overlay\"}) * 100", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
+      "targets": [ { "refId": "A", "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"}) * 100", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 80 }, { "color": "red", "value": 90 } ] } }, "overrides": [] }
     },
     {
@@ -42,7 +42,7 @@
       "id": 5, "type": "timeseries", "title": "CPU usage by mode",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [ { "refId": "A", "expr": "sum by (mode) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])) * 100 / count(count by (cpu) (node_cpu_seconds_total))", "legendFormat": "{{mode}}", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
+      "targets": [ { "refId": "A", "expr": "sum by (mode) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])) * 100 / scalar(count(count by (cpu) (node_cpu_seconds_total)))", "legendFormat": "{{mode}}", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "fillOpacity": 30, "stacking": { "mode": "normal" } } }, "overrides": [] }
     },
     {
@@ -69,7 +69,7 @@
       "id": 8, "type": "timeseries", "title": "Disk usage by mount",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [ { "refId": "A", "expr": "(1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\"}) * 100", "legendFormat": "{{mountpoint}}", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
+      "targets": [ { "refId": "A", "expr": "(1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run/.*\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run/.*\"}) * 100", "legendFormat": "{{mountpoint}}", "datasource": { "type": "prometheus", "uid": "prometheus" } } ],
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] }
     }
   ]

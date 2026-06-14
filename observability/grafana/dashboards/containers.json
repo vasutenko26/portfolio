@@ -61,7 +61,7 @@
       "targets": [
         { "refId": "A", "expr": "docker_container_memory_usage_bytes", "format": "table", "instant": true, "datasource": { "type": "prometheus", "uid": "prometheus" } }
       ],
-      "transformations": [ { "id": "organize", "options": { "excludeByName": { "Time": true, "job": true, "instance": true }, "renameByName": { "name": "Container", "Value": "Memory" } } } ],
+      "transformations": [ { "id": "organize", "options": { "excludeByName": { "Time": true, "job": true, "instance": true, "__name__": true, "id": true, "image": true }, "renameByName": { "name": "Container", "Value": "Memory" } } } ],
       "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }
     }
   ]
